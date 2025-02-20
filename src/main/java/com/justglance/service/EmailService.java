@@ -3,10 +3,11 @@ package com.justglance.service;
 import jakarta.mail.*;
 import jakarta.mail.internet.*;
 import java.util.Properties;
+import java.time.LocalDateTime;
 
 public class EmailService {
-    private final String username = "your-email@gmail.com"; // TODO: Move to config
-    private final String password = "your-app-password"; // TODO: Move to config
+    private final String username = System.getenv("EMAIL_USERNAME"); // Corrected environment variable
+    private final String password = System.getenv("EMAIL_PASSWORD"); // Corrected environment variable
     private final Session session;
 
     public EmailService() {
@@ -86,7 +87,7 @@ public class EmailService {
                     </div>
                 </body>
                 </html>
-                """, studentName, courseName, java.time.LocalDateTime.now());
+                """, studentName, courseName, LocalDateTime.now());
 
             message.setContent(htmlContent, "text/html; charset=utf-8");
             Transport.send(message);
