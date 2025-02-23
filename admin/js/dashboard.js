@@ -328,6 +328,7 @@ function markAllAsRead() {
     .then(response => response.json())
     .then(() => loadContactSubmissions())
     .catch(error => console.error('Error marking all submissions:', error));
+    alert("All messages marked as read!");
 }
 
 // Load contact submissions when page loads
