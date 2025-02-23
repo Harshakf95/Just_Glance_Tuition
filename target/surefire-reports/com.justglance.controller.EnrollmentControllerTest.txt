@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 Test set: com.justglance.controller.EnrollmentControllerTest
 -------------------------------------------------------------------------------
-Tests run: 7, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 2.780 s <<< FAILURE! -- in com.justglance.controller.EnrollmentControllerTest
-com.justglance.controller.EnrollmentControllerTest.doPost_MissingRequiredFields_ReturnsBadRequest -- Time elapsed: 2.556 s <<< FAILURE!
+Tests run: 7, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 1.073 s <<< FAILURE! -- in com.justglance.controller.EnrollmentControllerTest
+com.justglance.controller.EnrollmentControllerTest.doPost_MissingRequiredFields_ReturnsBadRequest -- Time elapsed: 0.964 s <<< FAILURE!
 org.opentest4j.AssertionFailedError: expected: <true> but was: <false>
 	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
 	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
@@ -83,7 +83,7 @@ org.opentest4j.AssertionFailedError: expected: <true> but was: <false>
 	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
 	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
 
-com.justglance.controller.EnrollmentControllerTest.doPost_InvalidEmail_ReturnsBadRequest -- Time elapsed: 0.050 s <<< FAILURE!
+com.justglance.controller.EnrollmentControllerTest.doPost_InvalidEmail_ReturnsBadRequest -- Time elapsed: 0.023 s <<< FAILURE!
 Wanted but not invoked:
 response.setStatus(400);
 -> at com.justglance.controller.EnrollmentControllerTest.doPost_InvalidEmail_ReturnsBadRequest(EnrollmentControllerTest.java:195)
@@ -172,7 +172,7 @@ response.getWriter();
 	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
 	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
 
-com.justglance.controller.EnrollmentControllerTest.doPost_InvalidPhoneNumber_ReturnsBadRequest -- Time elapsed: 0.008 s <<< FAILURE!
+com.justglance.controller.EnrollmentControllerTest.doPost_InvalidPhoneNumber_ReturnsBadRequest -- Time elapsed: 0.005 s <<< FAILURE!
 Wanted but not invoked:
 response.setStatus(400);
 -> at com.justglance.controller.EnrollmentControllerTest.doPost_InvalidPhoneNumber_ReturnsBadRequest(EnrollmentControllerTest.java:221)
