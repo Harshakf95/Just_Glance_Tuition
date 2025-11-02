@@ -42,9 +42,10 @@ const faculty = [
     }
 ];
 
-// Load courses
+// Load courses (only if a container exists on the page)
 function loadCourses() {
     const container = document.getElementById('courses-container');
+    if (!container) return; // no dynamic courses section on this page
     courses.forEach(course => {
         const courseElement = `
             <div class="col-md-4 mb-4">
@@ -63,9 +64,10 @@ function loadCourses() {
     });
 }
 
-// Load faculty
+// Load faculty (only if a container exists on the page)
 function loadFaculty() {
     const container = document.getElementById('faculty-container');
+    if (!container) return; // no dynamic faculty section on this page
     faculty.forEach(member => {
         const facultyElement = `
             <div class="col-md-4">
@@ -82,17 +84,20 @@ function loadFaculty() {
 }
 
 // Handle contact form submission
-document.getElementById('contact-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const message = document.getElementById('message').value;
+const contactForm = document.getElementById('contact-form');
+if (contactForm) {
+    contactForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const message = document.getElementById('message').value;
 
-    // Here you would typically send this data to your backend
-    console.log('Form submitted:', { name, email, message });
-    alert('Thank you for your message! We will get back to you soon.');
-    this.reset();
-});
+        // Here you would typically send this data to your backend
+        console.log('Form submitted:', { name, email, message });
+        alert('Thank you for your message! We will get back to you soon.');
+        this.reset();
+    });
+}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {

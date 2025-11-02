@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Form validation and submission
-    submitButton.addEventListener('click', function(event) {
+    submitButton.addEventListener('click', async function(event) {
         if (!enrollmentForm.checkValidity()) {
             event.preventDefault();
             event.stopPropagation();
@@ -45,34 +45,47 @@ document.addEventListener('DOMContentLoaded', function() {
             courseSchedule: document.getElementById('courseSchedule').textContent
         };
 
-        // Send enrollment data to server
-        fetch('/api/enroll', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Show success message
-                Swal.fire({
-                    title: 'Enrollment Successful!',
-                    text: 'Thank you for enrolling. We will contact you shortly.',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    // Reset form and close modal
-                    enrollmentForm.reset();
-                    enrollmentForm.classList.remove('was-validated');
-                    bootstrap.Modal.getInstance(document.getElementById('enrollmentModal')).hide();
-                });
-            } else {
-                throw new Error(data.message || 'Enrollment failed');
+        // Disable button to prevent duplicate submits
+        const originalText = submitButton.textContent;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Submitting...';
+
+        try {
+            // Fetch CSRF token first
+            const csrfResp = await fetch('/api/csrf-token', { credentials: 'include' });
+            if (!csrfResp.ok) throw new Error('Unable to initialize submission');
+            const { csrfToken } = await csrfResp.json();
+
+            // Send enrollment data to server with CSRF token
+            const response = await fetch('/api/enroll', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'CSRF-Token': csrfToken
+                },
+                credentials: 'include',
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.success) {
+                const msg = data && (data.message || data.error) || `Enrollment failed (${response.status})`;
+                throw new Error(msg);
             }
-        })
-        .catch(error => {
+
+            // Show success message
+            await Swal.fire({
+                title: 'Enrollment Successful!',
+                text: 'Thank you for enrolling. We will contact you shortly.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+
+            // Reset form and close modal
+            enrollmentForm.reset();
+            enrollmentForm.classList.remove('was-validated');
+            bootstrap.Modal.getInstance(document.getElementById('enrollmentModal')).hide();
+        } catch (error) {
             // Show error message
             Swal.fire({
                 title: 'Enrollment Failed',
@@ -80,7 +93,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 icon: 'error',
                 confirmButtonText: 'OK'
             });
-        });
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = originalText;
+        }
     });
 
     // Reset form when modal is closed

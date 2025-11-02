@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "just-glance-tuition-admin",
   "version": "1.0.0",
   "description": "Backend for Just Glance Tuition Admin Dashboard",
@@ -15,7 +16,10 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
-    "mysql2": "^3.12.0"
+    "mysql2": "^3.12.0",
+    "cookie-parser": "^1.4.7",
+    "csurf": "^1.11.0",
+    "express-rate-limit": "^7.4.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

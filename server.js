@@ -7,6 +7,9 @@ const path = require('path');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const csurf = require('csurf');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,10 +29,12 @@ const pool = mysql.createPool({
 app.use(cors({
     origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'CSRF-Token'],
+    credentials: true
 }));
 app.use(bodyParser.json());
 app.use(express.json());
+app.use(cookieParser());
 
 // Logging Middleware
 app.use((req, res, next) => {
@@ -43,12 +48,40 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'your_secret_key',
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+    cookie: {
+        secure: false, // set true if behind HTTPS
+        httpOnly: true,
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
 }));
 
 // Static Files Middleware (Order is important)
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// CSRF Protection
+const csrfProtection = csurf({ cookie: { httpOnly: true, sameSite: 'lax' } });
+// Expose a route to fetch CSRF token
+app.get('/api/csrf-token', csrfProtection, (req, res) => {
+    res.json({ csrfToken: req.csrfToken() });
+});
+
+// Rate Limiters
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // limit each IP to 10 login requests per window
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many login attempts. Please try again later.' }
+});
+const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many registration attempts. Please try again later.' }
+});
 
 // Authentication Middleware
 const requireAuth = (req, res, next) => {
@@ -74,8 +107,8 @@ app.get('/api', (req, res) => {
     });
 });
 
-// 🟢 User Registration Route
-app.post('/api/register', async (req, res) => {
+// User Registration Route
+app.post('/api/register', registerLimiter, csrfProtection, async (req, res) => {
     console.log('Registration request received:', req.body);
     const { username, password, email, role } = req.body;
 
@@ -109,8 +142,8 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// 🟢 Login Route
-app.post('/api/login', async (req, res) => {
+// Login Route
+app.post('/api/login', loginLimiter, csrfProtection, async (req, res) => {
     const { username, password } = req.body;
 
     try {
@@ -130,8 +163,8 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 🟢 Logout Route
-app.post('/api/logout', (req, res) => {
+// Logout Route
+app.post('/api/logout', csrfProtection, (req, res) => {
     req.session.destroy(err => {
         if (err) {
             console.error('Logout error:', err);
@@ -144,6 +177,36 @@ app.post('/api/logout', (req, res) => {
 // 🟢 Check Login Status
 app.get('/api/check-login', (req, res) => {
     res.json({ isLoggedIn: !!req.session.user, user: req.session.user ? { username: req.session.user.username } : null });
+});
+
+// 🟢 Public Enrollment Route (CSRF-protected)
+app.post('/api/enroll', csrfProtection, async (req, res) => {
+    try {
+        const {
+            courseName,
+            studentName,
+            studentEmail,
+            studentPhone,
+            studentDOB,
+            studentAddress,
+            previousSchool,
+            previousGrade,
+            courseFee,
+            courseDuration,
+            courseSchedule
+        } = req.body || {};
+
+        if (!courseName || !studentName || !studentEmail || !studentPhone) {
+            return res.status(400).json({ success: false, message: 'Missing required fields' });
+        }
+
+        // TODO: Persist to DB if needed. For now, just acknowledge.
+        console.log('New Enrollment:', req.body);
+        return res.json({ success: true });
+    } catch (error) {
+        console.error('Enrollment error:', error);
+        return res.status(500).json({ success: false, message: 'Server error during enrollment' });
+    }
 });
 
 // 🔴 Error Handling Middleware
