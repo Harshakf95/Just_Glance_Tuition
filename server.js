@@ -91,7 +91,7 @@ const requireAuth = (req, res, next) => {
 
 // Root route and default redirects
 app.get('/', (req, res) => {
-    res.redirect('/admin/login.html');
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/admin', (req, res) => {
